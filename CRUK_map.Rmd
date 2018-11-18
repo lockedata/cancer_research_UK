@@ -1,0 +1,47 @@
+---
+title: "Cancer Research UK"
+author: "Ellen Talbot"
+date: "18/11/2018"
+output: html_document
+---
+
+# PART 1: Set up 
+
+Load in the required packages 
+
+``` {r load packages, message=FALSE, warning=FALSE}
+library(rgdal)   # This package runs readOGR
+library(dplyr)   # Needed to run grepl, even thought that is in base r, also needed for left_join
+library(tmap)
+```
+
+
+## [Link to the data](http://geoportal.statistics.gov.uk/datasets/clinical-commissioning-groups-april-2017-super-generalised-clipped-boundaries-in-england-v4) 
+
+# PART 2:  Set Directories, upload files and prepare the data
+
+*Note, code below specifies 'ccg17cd'. This will need to be updated if another source is used.*
+
+I have made a change here - if you download the github repo you will be able to open "CRUK_geo.proj" which will save time with setting paths throughout the document as it is all referenced in one place and is generally good practise as it makes your code immediately reproductible from any machine. This is instead of manually setting a working directory which can sometimes make loading in data from other places tricky.
+
+
+Using the full stop here makes your code more readable - it essentially means "use the working directory" but there are variations to access different levels of folders such as ../ for a parent directory and ../../ for other places on your machine :) Use the tab key after `./` to explore it - I find this saves me so much time with silly spelling errors in paths.  
+Note that I have used the .shp file, this holds all the data inside the shapefile as well as the polygons. 
+
+```{r load shapefile}
+ccgsgcl <- readOGR("./Clinical_Commissioning_Groups_April_2017_Super_Generalised_Clipped_Boundaries_in_England_V4/Clinical_Commissioning_Groups_April_2017_Super_Generalised_Clipped_Boundaries_in_England_V4.shp")
+
+ccgsgcl@data$quintile <-  sample(5, size = nrow(ccgsgcl@data), replace = TRUE)
+# This generates the same column you were doing by hand
+# What it essentially says is myshapefile@thedatapart$newcolumn <- sample(use 5 numbers, size = number of rows in the data, repeat 1 - 5 until the end).
+```
+
+
+# PART 3:  Create the maps
+
+``` {r map }
+CRUK_map <- tm_shape(ccgsgcl) +
+  tm_polygons(col="quintile", style='fixed', breaks = c(0,1,2,3,4,5), border.col = "grey50",  border.alpha = 0.1, title="Cancer Research UK ", showNA=FALSE)
+
+CRUK_map
+```
